@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT Sensor Monitoring</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #eef2f7;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #17365d;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #cccccc;
+        }
+
+        .value {
+            font-size: 30px;
+            font-weight: bold;
+            color: #087e8b;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #17365d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>IoT Sensor Monitoring System</h1>
+<p>ESP8266 + Python Flask + MySQL</p>
+
+<div class="container">
+
+    <div class="card">
+        Temperature
+        <p class="value" id="temperature">--</p>
+        <span>°C</span>
+    </div>
+
+    <div class="card">
+        Humidity
+        <p class="value" id="humidity">--</p>
+        <span>%</span>
+    </div>
+
+    <div class="card">
+        Vibration
+        <p class="value" id="vibration">--</p>
+    </div>
+
+    <div class="card">
+        Gas
+        <p class="value" id="gas">--</p>
+    </div>
+
+    <div class="card">
+        Pressure
+        <p class="value" id="pressure">--</p>
+    </div>
+
+    <div class="card">
+        Rotation
+        <p class="value" id="rotation">--</p>
+    </div>
+
+</div>
+
+<h2>Sensor History</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Temperature</th>
+            <th>Humidity</th>
+            <th>Vibration</th>
+            <th>Gas</th>
+            <th>Pressure</th>
+            <th>Rotation</th>
+            <th>Date & Time</th>
+        </tr>
+    </thead>
+
+    <tbody id="sensorTable">
+    </tbody>
+</table>
+
+<script>
+
+async function loadSensorData() {
+
+    try {
+
+        const response = await fetch("/api/sensors");
+
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
+
+        const records = await response.json();
+
+        if (records.length === 0) return;
+
+        const latest = records[0];
+
+        document.getElementById("temperature").innerText =
+            latest.temperature;
+
+        document.getElementById("humidity").innerText =
+            latest.humidity;
+
+        document.getElementById("vibration").innerText =
+            latest.vibration;
+
+        document.getElementById("gas").innerText =
+            latest.gas;
+
+        document.getElementById("pressure").innerText =
+            latest.pressure;
+
+        document.getElementById("rotation").innerText =
+            latest.rotation;
+
+        const table = document.getElementById("sensorTable");
+
+        table.innerHTML = "";
+
+        records.forEach(record => {
+
+            const row = document.createElement("tr");
+
+            [
+                record.id,
+                record.temperature,
+                record.humidity,
+                record.vibration,
+                record.gas,
+                record.pressure,
+                record.rotation,
+                record.recorded_at
+            ].forEach(value => {
+
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+
+            });
+
+            table.appendChild(row);
+
+        });
+
+    } catch (error) {
+
+        console.log("Dashboard Error:", error);
+
+    }
+
+}
+
+loadSensorData();
+setInterval(loadSensorData, 2000);
+
+</script>
+
+</body>
+</html>
